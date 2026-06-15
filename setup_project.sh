@@ -90,3 +90,45 @@ cat > "$PROJECT_DIR/reports/reports.log" << 'EOF'
 EOF
 
 echo "Directory structure created successfully!"
+# SECTION 3 - Dynamic Configuration
+echo ""
+read -p "Do you want to update attendance thresholds? (yes/no) : " update_choice
+if [ "$update_choice" == "yes" ]; then
+	read -p "Enter new Warning threshold (default 75): " new_warning
+	read -p "Enter new Failure threshold (default 50): " new_failure
+	if ! [[ "$new_warning" =~ ^[0-9]+$ ]] || ! [[ "$new_failure" =~ ^[0-9]+$ ]]; then
+		echo "Invalid input! Thresholds must be numbers. Using defaults."
+	else
+
+		sed -i "s/\"warning\": [0-9]*/\"warning\": $new_warning/" "$PROJECT_DIR/Helpers/config.json"
+      
+	      	sed -i "s/\"failure\": [0-9]*/\"failure\": $new_failure/" "$PROJECT_DIR/Helpers/config.json"
+
+		echo "Thresholds updated! Warning: $new_warning%, Failure: $new_failure%"
+	fi
+else
+	echo "Keeping default thresholds. Warning: 75%, Failure: 50%"
+fi
+#SECTION 4 - Environment Validation
+echo ""
+echo "Running Health Check..."
+if command -v python3 &>/dev/null; then
+	echo "Python3 is installed!"
+	python3 --version
+else
+	echo "WARNING: Python3 is not installed!"
+fi
+echo ""
+echo "Verifying directory structure..."
+if [ -f "$PROJECT_DIR/attendance_checker.py" ] && \
+   [ -f "$PROJECT_DIR/Helpers/assets.csv" ] && \
+   [ -f "$PROJECT_DIR/Helpers/config.json" ] && \
+   [ -f "$PROJECT_DIR/reports/reports.log" ]; then
+     echo "All files verified successfully!"
+else 
+   echo "Warning: Some files are missing!"
+fi
+echo ""
+echo "Project setup complete!"
+
+
